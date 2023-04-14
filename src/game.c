@@ -14,7 +14,7 @@ int nextMove(int tour, char checker[10][10]) {
     printf("\nVoulez-vous enregistrer la partie actuelle ? o/n\n");
     int out = 1; 
     char answer;
-    while (out){
+    while (out){ 
         scanf("%c", &answer);
         printf("%c\n", answer);
         switch (answer){

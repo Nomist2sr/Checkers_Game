@@ -2,7 +2,7 @@
 #define UNTITLED_GAME
 
 // SYSTEME INCLUDE(S)
-#include <stdio.h>
+#include <stdio.h> 
 #include <stdlib.h> 
 
 // STRUCTURE(S)
