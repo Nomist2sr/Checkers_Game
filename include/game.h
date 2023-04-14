@@ -3,16 +3,16 @@
 
 // SYSTEME INCLUDE(S)
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h> 
 
 // STRUCTURE(S)
 
 // LOCAL INCLUDE(S)
 #include "utils.h"
-#include "save.h"
+#include "save.h" 
 
-// PROTOTYPE(S)
+// PROTOTYPE(S) 
+int nextMove(int tour, char checker[10][10]);
 void initGame();
-void nextMove();
 
 #endif // UNTITLED_GAME
