@@ -4,10 +4,10 @@
 // SYSTEME INCLUDE(S)
 #include <stdio.h>
 #include <stdlib.h>
-
 // STRUCTURE(S)
 
 // LOCAL INCLUDE(S)
+#include "checker.h"
 
 // PROTOTYPE(S)
 void initChecker(char checker[10][10], char * saving);
@@ -17,6 +17,8 @@ int chooseMove(char checker[10][10],char player);
 
 void showChecker(char checker[10][10]);
 int countPieces(char checker[10][10],char side);
+void getForcedMoveFromPiece(char checker[10][10], next_move *all_next_move, char piece, int posPiece[2],int nbMoves, int* firstMove);
+next_move * getNextForcedMoves(char checker[10][10], char side);
 
 
 #endif /* !UTILS_H_ */

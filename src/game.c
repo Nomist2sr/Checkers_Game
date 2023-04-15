@@ -44,8 +44,16 @@ void initGame(){
     while(stop !=1 || stop != 0) {
         stop = nextMove(tour, checker);
         tour++;
+        if(countPieces(checker,'O')==0){
+            printf("\nLe joueur noir a gagne !!!\n");
+            stop=1;
+        }
+        if(countPieces(checker,'@')==0){
+            printf("\nLe joueur blanc a gagne !!!\n");
+            stop=1;
+        }
     }
-    printf("test je suis bien sortie :) ");
+    //printf("test je suis bien sortie :) ");
 }
 
 

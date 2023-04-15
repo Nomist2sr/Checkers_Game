@@ -1,29 +1,33 @@
 #include "checker.h"
 
-void initStructureNextMove(next_move *init_next_move,int* pieceToMove,int*positionToEnd,nbPieceTaken)
+void initStructureNextMove(next_move *init_next_move,int* pieceToMove,int*positionToEnd,int nbPieceTaken)
 {
     if (init_next_move != NULL)
     {
-        init_next_move->pieceToMove=pieceToMove;
-        init_next_move->positionToEnd=positionToEnd;
+        init_next_move->pieceToMove[0]=pieceToMove[0];
+        init_next_move->pieceToMove[1]=pieceToMove[1];
+        init_next_move->positionToEnd[0]=positionToEnd[0];
+        init_next_move->positionToEnd[1]=positionToEnd[1];
         init_next_move->_next = NULL;
         init_next_move->_previous = NULL;
+        init_next_move->nbPieceTaken=nbPieceTaken;
     }
 }
 
 
-void AddNextMove(next_move *full_next_move,int* pieceToMove,int*positionToEnd,nbPieceTaken)
+void AddNextMove(next_move *nextMove,int* pieceToMove,int*positionToEnd,int nbPieceTaken)
 {
-    if (full_next_move != NULL)
+    nextMove=goToLastMove(nextMove);
+    if (nextMove != NULL)
     {
         next_move *n_next_move = malloc(sizeof(next_move));
         initStructureNextMove(n_next_move,pieceToMove,positionToEnd,nbPieceTaken);
         if(n_next_move!=NULL){
-            if (full_next_move->_next == NULL)
+            if (nextMove->_next == NULL)
             {
-                n_next_move->_previous = full_next_move;
+                n_next_move->_previous = nextMove;
                 n_next_move->_next = NULL;
-                node->_next = n_next_move;
+                nextMove->_next = n_next_move;
             }
         }
     }else{
@@ -32,43 +36,61 @@ void AddNextMove(next_move *full_next_move,int* pieceToMove,int*positionToEnd,nb
     }
 }
 
-int getIfMoveIsLegalForced(int * move, next_move*full_next_move){
-    if(full_next_move==NULL)return 1;
-    full_next_move=goToFirstMove(full_next_move);
+int getIfMoveIsLegalForced(next_move*nextMove,int * start,int * move){
+    if(nextMove==NULL)return 1;
+    nextMove=goToFirstMove(nextMove);
     int isMoveLegal=0;
-    while(full_next_move->_next!=NULL){
-        if(full_next_move->positionToEnd[0]==move[0]&&full_next_move->positionToEnd[1]==move[1]){
-            isMoveLegal=1;
+    while(nextMove!=NULL){
+        if(nextMove->pieceToMove[0]==start[0]&&nextMove->pieceToMove[1]==start[1]){
+            if(nextMove->positionToEnd[0]==move[0]&&nextMove->positionToEnd[1]==move[1]){
+                isMoveLegal=1;
+            }
         }
-        full_next_move= full_next_move->_next;
+        nextMove= nextMove->_next;
     }
     return isMoveLegal;
 
 }
 
-void deleteFirstMove(next_move *full_next_move){//Used to remove the first element that is a placeholder
-    full_next_move=goToFirstMove(full_next_move);
-    next_move next_move_next= full_next_move->_next;
-    free(full_next_move);
-    full_next_move->_previous=NULL;
+void resetHeadMoves(next_move **nextMove){
+    *nextMove=NULL;
 }
 
-void deleteAllMoves(next_move *full_next_move)
+next_move * deleteFirstMove(next_move *nextMove){//Used to remove the first element that is a placeholder
+    nextMove=goToFirstMove(nextMove);
+    next_move * next_move_next= NULL;
+    if(nextMove->_next!=NULL){
+        next_move_next=nextMove->_next;
+    }
+    free(nextMove);
+    if(next_move_next!=NULL){
+        next_move_next->_previous=NULL;
+        nextMove=next_move_next;
+        return nextMove;
+    }else{
+        resetHeadMoves(&nextMove);
+        return NULL;
+    }
+}
+
+void deleteAllMoves(next_move *nextMove)
 {
-    if(full_next_move==NULL)return ;
-    full_next_move=goToFirstMove(full_next_move);
-
-    while(full_next_move->_next!=NULL){
-        next_move next_move_next= full_next_move->_next;
-        free(full_next_move);
-        full_next_move= next_move_next;
+    if(nextMove==NULL)return ;
+    nextMove=goToFirstMove(nextMove);
+    while(nextMove->_next!=NULL){
+        next_move * next_move_next= nextMove->_next;
+        free(nextMove);
+        nextMove= next_move_next;
     }
-    if(full_next_move!=NULL){
-        free(full_next_move);
+    if(nextMove!=NULL){
+        free(nextMove);
     }
+    resetHeadMoves(&nextMove);
 }
 
-next_move goToFirstMove(next_move *nextMove){
+
+
+next_move * goToFirstMove(next_move *nextMove){
     while (nextMove->_previous != NULL)
     {
         nextMove = nextMove->_previous;
@@ -77,7 +99,7 @@ next_move goToFirstMove(next_move *nextMove){
     return(nextMove);
 }
 
-next_move goToLastMove(next_move *nextMove){
+next_move * goToLastMove(next_move *nextMove){
     while (nextMove->_next != NULL)
     {
         nextMove = nextMove->_next;
@@ -87,9 +109,21 @@ next_move goToLastMove(next_move *nextMove){
 }
 
 int count(next_move *nextMove){
-    full_next_move=goToFirstMove(full_next_move);
-    while(full_next_move->_next!=NULL){
+    int count=0;
+    nextMove=goToFirstMove(nextMove);
+    while(nextMove->_next!=NULL){
         count++;
     }
     return count;
+}
+
+void printAllForcedMoves(next_move *nextMove){
+    if(nextMove==NULL)return;
+    nextMove=goToFirstMove(nextMove);
+    printf("Liste des mouvements obligatoires: \n");
+    while(nextMove!=NULL){
+        printf("| [%d:%d] vers [%d:%d] |",nextMove->pieceToMove[0]+1,nextMove->pieceToMove[1]+1,nextMove->positionToEnd[0]+1,nextMove->positionToEnd[1]+1);
+        nextMove=nextMove->_next;
+    }
+    printf("\n");
 }

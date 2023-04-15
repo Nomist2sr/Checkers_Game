@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "checker.c"
 
 //Add the pawns and kings(by default if no saves)
 //BLACK ON TOP and WHITE ON BOTTOM
@@ -90,6 +91,111 @@ int * recurciveKing_checkPiece(char checker[10][10],int* kingPosition,int* targe
         return foundPiece;
     }else{
         return recurciveKing_checkPiece(checker,kingPosition,targetPosition,foundPiece,nbLoop);
+    }
+}
+
+
+//Function that add all the possible move of a piece
+//posPiece is the actual position of the piece, in the case of a recursive use where the piece would move several times
+//firstMove is the original position of the piece, and is the value to be returned regarding the piece position
+void getForcedMoveFromPiece(char checker[10][10], next_move *all_next_move, char piece, int posPiece[2],int nbMoves, int* firstMove){
+    //int end=0;
+    int x=posPiece[0];
+    int y=posPiece[1];
+
+    if(piece=='O'){
+        if(x-2>=0&&y+2<10){
+            if((checker[x-1][y+1]=='@'||checker[x-1][y+1]=='B')&&checker[x-2][y+2]==' '){
+                //getForcedMoveFromPiece(checker,piece,{x-2,y+2},nbMoves++,firstMove);
+                AddNextMove(all_next_move, firstMove,(int[2]){x-2,y+2} ,nbMoves);
+            }
+        }
+        if(x-2>=0&&y-2>=0){
+            if((checker[x-1][y-1]=='@'||checker[x-1][y-1]=='B')&&checker[x-2][y-2]==' '){
+                //getForcedMoveFromPiece(checker,piece,{x-2,y-2},nbMoves++);
+                AddNextMove(all_next_move, firstMove,(int[2]){x-2,y-2} ,nbMoves);
+            }
+        }
+    }
+    if(piece=='@'){
+        if(x+2<10&&y+2<10){
+            if((checker[x+1][y+1]=='O'||checker[x+1][y+1]=='W')&&checker[x+2][y+2]==' '){
+                //getForcedMoveFromPiece(checker,piece,{x+2,y+2},nbMoves++);
+                AddNextMove(all_next_move, firstMove,(int[2]){x+2,y+2} ,nbMoves);
+            }
+        }
+        if(x+2<10&&y-2>=0){
+            if((checker[x+1][y-1]=='O'||checker[x+1][y-1]=='W')&&checker[x+2][y-2]==' '){
+                //getForcedMoveFromPiece(checker,piece,{x+2,y-2},nbMoves++);
+                AddNextMove(all_next_move, firstMove,(int[2]){x+2,y-2} ,nbMoves);
+            }
+        }
+    }
+
+    if(piece=='W'||piece=='B'){
+        int defaultList[2] = {10,10};
+        int checkPos[2] = {10,10};
+        for(int i=1;i<10;i++){
+
+            checkPos[0]=posPiece[0]+i;
+            checkPos[1]=posPiece[1]+i;
+            //Vers en bas a droite
+            if(checkPos[0]>=0&&checkPos[0]<10&&checkPos[1]>=0&&checkPos[1]<10&&checker[checkPos[0]][checkPos[1]]==' '){
+                int * resultRecusiveKing= recurciveKing_checkPiece(checker,posPiece,checkPos,defaultList, 0);
+                if(resultRecusiveKing[0]>=0&&resultRecusiveKing[1]>=0&&resultRecusiveKing[0]<10&&resultRecusiveKing[1]<10){
+                    AddNextMove(all_next_move, firstMove,checkPos ,nbMoves);
+                }
+            }
+            //Vers en bas a gauche
+            checkPos[1]=posPiece[1]-i;
+            if(checkPos[0]>=0&&checkPos[0]<10&&checkPos[1]>=0&&checkPos[1]<10&&checker[checkPos[0]][checkPos[1]]==' '){
+                int * resultRecusiveKing= recurciveKing_checkPiece(checker,posPiece,checkPos,defaultList, 0);
+                if(resultRecusiveKing[0]>=0&&resultRecusiveKing[1]>=0&&resultRecusiveKing[0]<10&&resultRecusiveKing[1]<10){
+                    AddNextMove(all_next_move, firstMove,checkPos ,nbMoves);
+                }
+            }
+            //Vers en haut a gauche
+            checkPos[0]=posPiece[0]-i;
+            if(checkPos[0]>=0&&checkPos[0]<10&&checkPos[1]>=0&&checkPos[1]<10&&checker[checkPos[0]][checkPos[1]]==' '){
+                int * resultRecusiveKing= recurciveKing_checkPiece(checker,posPiece,checkPos,defaultList, 0);
+                if(resultRecusiveKing[0]>=0&&resultRecusiveKing[1]>=0&&resultRecusiveKing[0]<10&&resultRecusiveKing[1]<10){
+                    AddNextMove(all_next_move, firstMove,checkPos ,nbMoves);
+                }
+            }
+            //Vers en haut a droite
+            checkPos[1]=posPiece[1]+i;
+            if(checkPos[0]>=0&&checkPos[0]<10&&checkPos[1]>=0&&checkPos[1]<10&&checker[checkPos[0]][checkPos[1]]==' '){
+                int * resultRecusiveKing= recurciveKing_checkPiece(checker,posPiece,checkPos,defaultList, 0);
+                if(resultRecusiveKing[0]>=0&&resultRecusiveKing[1]>=0&&resultRecusiveKing[0]<10&&resultRecusiveKing[1]<10){
+                    AddNextMove(all_next_move, firstMove,checkPos ,nbMoves);
+                }
+            }
+        }
+    }
+}
+
+
+next_move * getNextForcedMoves(char checker[10][10], char side){
+    int returnList[2] = {10,10};
+    next_move *all_next_move = malloc(sizeof(next_move));
+    initStructureNextMove(all_next_move,(int[2]){-1,-1},(int[2]){-1,-1},0);
+    for(int i = 0; i < 10; i++){
+        for(int j = 0; j < 10; j++){
+            returnList[0] = i;
+            returnList[1] = j;
+            if((checker[i][j] == '@' || checker[i][j] == 'B') && side == '@'){
+                getForcedMoveFromPiece(checker,all_next_move,checker[i][j],returnList,0,returnList);
+            }
+            if((checker[i][j] == 'O' || checker[i][j] == 'W') && side == 'O'){
+                getForcedMoveFromPiece(checker,all_next_move,checker[i][j],returnList,0,returnList);
+            }
+        }
+    }
+    next_move * result=deleteFirstMove(all_next_move);
+    if(result==NULL){
+        return NULL;
+    }else{
+        return result;
     }
 }
 
@@ -190,6 +296,10 @@ int chooseMove(char checker[10][10],char player){
     */
     int isMoveLegal =- 1;
 
+    next_move * allNextMoves=getNextForcedMoves(checker,player);
+    printAllForcedMoves(allNextMoves);
+
+
     while(isMoveLegal != 1){
         isMoveLegal = -1;
         int playerCoord[2]={-1,-1};
@@ -229,9 +339,17 @@ int chooseMove(char checker[10][10],char player){
                 if(cibleCoord[0]<0||cibleCoord[0]>9 || cibleCoord[1]<0 || cibleCoord[1]>9){
                     printf("L'une des coordonnees n'est pas sur le tableau, recommencez!\n\n");
                 }else{
-                    isMoveLegal=movePawn(checker,playerCoord,cibleCoord);
-                    if(isMoveLegal!=1){
-                        printf("Le mouvement est incorrect\n\n");
+                    int isMoveInForced=getIfMoveIsLegalForced(allNextMoves,(int[2]){playerCoord[0],playerCoord[1]},(int[2]){cibleCoord[0],cibleCoord[1]});
+                    if(isMoveInForced==0){
+                        printf("Vous ne pouvez faire ce mouvement car vous avez des mouvements obligatoires\n\n");
+                        printAllForcedMoves(allNextMoves);
+                    }else{
+                        isMoveLegal=movePawn(checker,playerCoord,cibleCoord);
+                        if(isMoveLegal!=1){
+                            printf("Le mouvement est incorrect\n\n");
+                        }else{
+                            deleteAllMoves(allNextMoves);
+                        }
                     }
                 }
             }
@@ -276,52 +394,3 @@ int countPieces(char checker[10][10],char side){
     return count;
 }
 
-
-/*
-int** getNextForcedMoves(char checker[10][10], char side){
-    int count = 0;
-    next_move *all_next_move = malloc(sizeof(next_move));
-    initStructureNextMove(all_next_move,{-1,-1},{-1,-1},0);
-    for(int i = 0; i < 10; i++){
-        for(int j = 0; j < 10; j++){
-            if((checker[i][j] == '@' || checker[i][j] == 'B') && side == '@'){
-                getForcedMoveFromPiece(checker,all_next_move,checker[i][j],{i,j},0,{i,j});
-            }
-            if((checker[i][j] == 'O' || checker[i][j] == 'W') && side == 'O'){
-                getForcedMoveFromPiece(checker,all_next_move,checker[i][j],{i,j},0,{i,j});
-            }
-        }
-    }
-    deleteFirstMove(all_next_move);
-}
-
-void getForcedMoveFromPiece(char checker[10][10], int** listOfMoves, char piece, int * posPiece,int nbMoves, int* firstMove){
-     int end=0;
-    if(side=='O'){
-        if((posPiece[x+1][y+1]=='@'||posPiece[x+1][y+1]=='B')&&posPiece[x+2][y+2]==' '){
-            getForcedMoveFromPiece(checker,piece,{x+2,y+2},nbMoves++,firstMove);
-        }else
-        if((posPiece[x+1][y-1]=='@'||posPiece[x+1][y-1]=='B')&&posPiece[x+2][y-2]==' '){
-            getForcedMoveFromPiece(checker,piece,{x+2,y+2},nbMoves++);
-        }else{
-            end=1;
-        }
-    }
-    if(side=='@'){
-        if((posPiece[x-1][y+1]=='O'||posPiece[x-1][y+1]=='W')&&posPiece[x-2][y+2]==' '){
-            getForcedMoveFromPiece(checker,piece,{x-2,y+2},nbMoves++);
-        }else
-        if((posPiece[x-1][y-1]=='O'||posPiece[x-1][y-1]=='W')&&posPiece[x-2][y-2]==' '){
-            getForcedMoveFromPiece(checker,piece,{x-2,y+2},nbMoves++);
-        }else{
-            end=1;
-        }
-    }
-
-    if(end==1){
-        AddNextMove(next_move *full_next_move, firstMove,end ,nbMoves);
-    }
-}
-
-
-*/
